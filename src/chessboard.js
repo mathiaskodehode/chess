@@ -1,4 +1,6 @@
 import { createElement } from "./helperFunctions";
+import ChessSquare from "./chessSquare.js";
+import ChessPiece from "./chessPiece.js";
 
 export class ChessBoard {
     #root = null;
@@ -7,7 +9,7 @@ export class ChessBoard {
     #legalMoves = [];
     #lastMove = null;
     #game = null;
-    
+
     constructor(game) {
         this.#game = game;
         document.addEventListener("keydown", event => {
@@ -16,11 +18,11 @@ export class ChessBoard {
             }
         });
     }
-    
+
     get squares() {
         return this.#squares;
     }
-    
+
     // TODO: add option for flipping the board (reverse)
 
     build() {
@@ -117,11 +119,7 @@ export class ChessBoard {
             for (let x = 0; x < 8; x++) {
                 const pieceData = board[y][x];
                 if (!pieceData) continue;
-                const piece = new ChessPiece(
-                    pieceData.type,
-                    pieceData.color === "w" ? "white" : "black",
-                    this.#squares[x][7 - y],
-                );
+                const piece = new ChessPiece(pieceData.type, pieceData.color === "w" ? "white" : "black", this.#squares[x][7 - y]);
                 this.addPiece(piece);
             }
         }
@@ -158,94 +156,5 @@ export class ChessBoard {
         if (!move) return;
         this.showLastMove(move);
         this.renderPosition();
-    }
-}
-
-class ChessSquare {
-    #element;
-    #x;
-    #y;
-    #piece = null;
-
-    constructor(x, y, element) {
-        this.#x = x;
-        this.#y = y;
-        this.#element = element;
-    }
-
-    get notation() {
-        return ["a", "b", "c", "d", "e", "f", "g", "h"][this.#x] + (this.#y + 1);
-    }
-
-    get element() {
-        return this.#element;
-    }
-
-    get x() {
-        return this.#x;
-    }
-
-    get y() {
-        return this.#y;
-    }
-
-    get piece() {
-        return this.#piece;
-    }
-
-    set piece(piece) {
-        this.#piece = piece;
-    }
-}
-
-class ChessPiece {
-    #type;
-    #color;
-    #square;
-    #element;
-
-    constructor(type, color, square) {
-        this.#type = type;
-        this.#color = color;
-        this.#square = square;
-
-        this.#element = createElement(
-            "img",
-            {
-                src: this.getImagePath(),
-                classList: "piece",
-                draggable: false,
-            },
-            square.element,
-        );
-    }
-
-    get type() {
-        return this.#type;
-    }
-
-    get color() {
-        return this.#color;
-    }
-
-    get square() {
-        return this.#square;
-    }
-
-    get element() {
-        return this.#element;
-    }
-
-    getImagePath() {
-        const names = {
-            p: "Pawn",
-            n: "Knight",
-            b: "Bishop",
-            r: "Rook",
-            q: "Queen",
-            k: "King",
-        };
-
-        return `../assets/${this.color}${names[this.type]}.svg`;
     }
 }
