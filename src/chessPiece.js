@@ -48,6 +48,6 @@ export default class ChessPiece {
             k: "King",
         };
 
-        return `${import.meta.env.BASE_URL}assets/${this.color}${names[this.type]}.svg`;
+        return `${import.meta.env.BASE_URL}${this.color}${names[this.type]}.svg`;
     }
 }
