@@ -1,3 +1,25 @@
+:root {
+    --boardSize: min(96vw, 96vh);
+    --pieceSize: calc(var(--boardSize) / 10);
+
+    --color-board-border: #000;
+    --color-square-light: #f0d9b5;
+    --color-square-dark: #332920;
+    --color-selected: red;
+    --color-legal-move: grey;
+    --color-legal-capture: rgba(0, 0, 0, 0.35);
+    --color-last-move: rgba(255, 255, 0, 0.25);
+    --color-hint: rgba(0, 255, 0, 0.25);
+
+    --board-border-width: 4px;
+    --selected-outline-width: 8px;
+    --legal-move-size: 18px;
+    --legal-capture-inset: 6px;
+    --legal-capture-border-width: 8px;
+    --board-radius: 0;
+    --legal-move-radius: 50%;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -12,15 +34,13 @@ body {
 }
 
 .board {
-    width: 1024px;
-    height: 1024px;
-
+    width: var(--boardSize);
+    height: var(--boardSize);
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-
     user-select: none;
-    border: 4px solid black;
+    border: var(--board-border-width) solid var(--color-board-border);
 }
 
 .square {
@@ -28,58 +48,57 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-
     font-size: 48px;
 }
 
 .squareText {
-    font-size: 18px;
     position: relative;
     top: 0;
+    font-size: 18px;
 }
 
 .white {
-    background: #f0d9b5;
+    background: var(--color-square-light);
 }
 
 .black {
-    background: #332920;
+    background: var(--color-square-dark);
 }
 
 .piece {
-    height: 100px;
-    width: 100px;
+    width: var(--pieceSize);
+    height: var(--pieceSize);
 }
 
 .selected {
-    outline: 8px solid red;
+    outline: var(--selected-outline-width) solid var(--color-selected);
     z-index: 99;
 }
 
 .legalMove::after {
     content: "";
-    width: 18px;
-    height: 18px;
-    border-radius: 9999px;
-    background: grey;
     position: absolute;
     top: 50%;
     left: 50%;
+    width: var(--legal-move-size);
+    height: var(--legal-move-size);
+    border-radius: var(--legal-move-radius);
+    background: var(--color-legal-move);
     transform: translate(-50%, -50%);
 }
 
 .legalCapture::after {
     content: "";
     position: absolute;
-    inset: 6px;
-    border: 8px solid rgba(0, 0, 0, 0.35);
-    border-radius: 50%;
+    inset: var(--legal-capture-inset);
+    border: var(--legal-capture-border-width) solid var(--color-legal-capture);
+    border-radius: var(--legal-move-radius);
 }
 
 .lastMove {
-    box-shadow: inset 0 0 0 9999px rgba(255, 255, 0, 0.25);
+    box-shadow: inset 0 0 0 9999px var(--color-last-move);
 }
 
 .hint {
-    box-shadow: inset 0 0 0 9999px rgba(0, 255, 0, 0.25);
+    box-shadow: inset 0 0 0 9999px var(--color-hint);
 }
