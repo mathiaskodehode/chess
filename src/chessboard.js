@@ -9,13 +9,16 @@ export class ChessBoard {
     #legalMoves = [];
     #lastMove = null;
     #game = null;
+    #engine = null;
+    #isEngineThinking = false;
+    #playerColor = "w"; // TODO: player gets to pick their color
 
-    constructor(game) {
+    constructor(game, engine = null) {
         this.#game = game;
+        this.#engine = engine;
+
         document.addEventListener("keydown", event => {
-            if (event.key === "Escape") {
-                this.clearSelection();
-            }
+            if (event.key === "Escape") this.clearSelection();
         });
     }
 
@@ -52,9 +55,7 @@ export class ChessBoard {
     }
 
     clearLegalMoves() {
-        for (const move of this.#legalMoves) {
-            this.getSquare(move.to).element.classList.remove("legalMove");
-        }
+        for (const move of this.#legalMoves) this.getSquare(move.to).element.classList.remove("legalMove");
         this.#legalMoves = [];
     }
 
@@ -65,15 +66,11 @@ export class ChessBoard {
             verbose: true,
         });
         this.#legalMoves = moves;
-        for (const move of moves) {
-            this.getSquare(move.to).element.classList.add("legalMove");
-        }
+        for (const move of moves) this.getSquare(move.to).element.classList.add("legalMove");
     }
 
     clearSelection() {
-        if (this.#selectedSquare) {
-            this.#selectedSquare.element.classList.remove("selected");
-        }
+        if (this.#selectedSquare) this.#selectedSquare.element.classList.remove("selected");
         this.clearLegalMoves();
         this.#selectedSquare = null;
     }
@@ -87,9 +84,7 @@ export class ChessBoard {
 
     clearLastMoveHighlight() {
         const highlighted = this.#root.querySelectorAll(".lastMove");
-        for (const element of highlighted) {
-            element.classList.remove("lastMove");
-        }
+        for (const element of highlighted) element.classList.remove("lastMove");
     }
 
     showLastMove(move) {
@@ -124,12 +119,40 @@ export class ChessBoard {
             }
         }
 
-        if (this.#lastMove) {
-            this.showLastMove(this.#lastMove);
-        }
+        if (this.#lastMove) this.showLastMove(this.#lastMove);
     }
 
-    handleSquareClick(square) {
+    async makeEngineMove() {
+        if (!this.#engine || this.#game.isGameOver()) return;
+
+        this.#isEngineThinking = true;
+        const currentFen = this.#game.fen();
+
+        const bestMoveUCI = await this.#engine.findBestMove(currentFen, 1);
+
+        if (bestMoveUCI && bestMoveUCI !== "(none)") {
+            const fromNotation = bestMoveUCI.substring(0, 2);
+            const toNotation = bestMoveUCI.substring(2, 4);
+            const promotion = bestMoveUCI.length > 4 ? bestMoveUCI[4] : "q";
+
+            const move = this.#game.move({
+                from: fromNotation,
+                to: toNotation,
+                promotion: promotion,
+            });
+
+            if (move) {
+                this.showLastMove(move);
+                this.renderPosition();
+            }
+        }
+
+        this.#isEngineThinking = false;
+    }
+
+    async handleSquareClick(square) {
+        if (this.#isEngineThinking || this.#game.turn() !== this.#playerColor) return;
+
         if (!this.#selectedSquare) {
             if (!square.piece) return;
             this.selectSquare(square);
@@ -152,9 +175,13 @@ export class ChessBoard {
         } catch {
             console.log("illegal move attempted");
         }
+
         this.clearSelection();
         if (!move) return;
+
         this.showLastMove(move);
         this.renderPosition();
+
+        if (this.#engine && !this.#game.isGameOver()) await this.makeEngineMove();
     }
 }
